@@ -1,0 +1,19 @@
+{
+  "name": "devtinderapp",
+  "version": "1.0.0",
+  "description": "tinderfordev",
+  "main": "index.js",
+  "scripts": {
+    "start":"nodemon src/app.js"
+  },
+  "keywords": [
+    "nodejs",
+    "react"
+  ],
+  "author": "likith",
+  "license": "ISC",
+  "dependencies": {
+    "autosave": "^1.0.3",
+    "express": "^5.1.0"
+  }
+}
