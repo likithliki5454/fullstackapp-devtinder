@@ -1,6 +1,9 @@
 // const app=require('express');
 
-const authadmin=('/admin',(req,res,next)=>{
+const authadmin=((err,req,res,next)=>{
+    if(err){
+    res.status(500).send('server error');
+}
     const token='abc';
     const isvalidtocken=token==='abc';
     if(isvalidtocken){
@@ -11,7 +14,10 @@ const authadmin=('/admin',(req,res,next)=>{
     }
 })
 
-const authuser=('/user',(req,res,next)=>{
+const authuser=((err,req,res,next)=>{
+if(err){
+    res.status(500).send('server error');
+}
     const token='abcd';
     const isvalidtocken=token==='abcd';
     if(isvalidtocken){
