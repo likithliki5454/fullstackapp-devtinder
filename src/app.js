@@ -8,6 +8,30 @@ const app=express();
 // });  routing  example http://localhost:3000/node/78
 
 
+
+//handlling the middleware
+const {authadmin,authuser}=require('./Middleware/auth.js');
+
+app.use('/admin', authadmin);
+
+app.use('/user', authuser);
+
+app.get('/user/getdata',(req,res)=>{
+    res.send('user page');
+});//user
+
+app.get('/admin/getdata',(req,res)=>{
+    res.send('admin page');
+}); //admin
+
+app.delete('/admin/delete',(req,res)=>{
+res.send('all data deleted');
+})
+
+//middleware code example end
+
+
+
 app.listen(3000, ()=>{
     console.log('sucess')
 })
