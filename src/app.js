@@ -7,13 +7,23 @@ const app=express();
 // res.send('selected id '+ req.params.id)
 // });  routing  example http://localhost:3000/node/78
 
+//basic middleware example
+//if we use "USE" then it will take the first match
 
+app.use('/',(req,res)=>{
+    res.send('slash page');
+});
+
+app.get('/test',(req,res)=>{
+    res.send('test page');
+});
+
+//basic middleware example end
 
 //handlling the middleware
 const {authadmin,authuser}=require('./Middleware/auth.js');
 
 app.use('/admin', authadmin);
-
 app.use('/user', authuser);
 
 app.get('/user/getdata',(req,res)=>{
