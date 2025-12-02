@@ -1,7 +1,7 @@
 const mangoose=require('mongoose');
  const userschema=mangoose.Schema({
     firstName:{
-    type:'String',
+    type:String,
     },
     lastName: {
         type: String,
