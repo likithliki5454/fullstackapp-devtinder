@@ -38,6 +38,24 @@ app.get('/user', async (req, res) => {
 })
 
 
+app.patch('/user', async (req, res) => {
+    const updateuser = req.body.id;
+    const data=req.body;
+    try {
+       const du= await User.findByIdAndUpdate({_id:updateuser},data,{returnDocument:'after' });
+        if (!du) {
+            res.status(404).send('User not found for update');    
+        } else {
+            console.log("update user data:", du);
+            res.send('data updated successfully');
+        }   
+    } catch (error) {
+        console.error("update error:", error);
+        res.status(500).send('Error update user data');
+    }
+})
+
+
 
 app.delete('/user', async (req, res) => {
     const deluser=req.body.id
@@ -54,6 +72,8 @@ app.delete('/user', async (req, res) => {
         res.status(500).send('Error deleting user data');
     }
 })
+
+
 
 // Connect to DB and start server
 connectDB().then(() => {
