@@ -3,10 +3,11 @@ const app = express();
 const User = require('./models/user.js');   // Use only this
 
 const connectDB = require('./Config/database.js');
+const user = require('./models/user.js');
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // POST route - create user
-app.post('/signup', async (req, res) => {    
+app.post('/signup', async (req, res) => {
     console.log("Received body:", req.body);
 
     const data = new User(req.body);
@@ -20,6 +21,24 @@ app.post('/signup', async (req, res) => {
         res.status(500).send('Error signing up user');
     }
 });
+
+app.get('/user', async (req, res) => {
+    const resd = req.body.lastName
+    try {
+        const ud = await User.find({ lastName: resd })
+        if(ud.length===0){
+            return res.status(404).send('User not found');
+        }else{
+            console.log("Retrieved user data:", ud);
+            res.send(ud)
+        }
+        
+    }
+    catch (err) {
+        console.error("Read error:", err);
+        res.status(500).send('Error reading user data');
+    }
+})
 
 // Connect to DB and start server
 connectDB().then(() => {
