@@ -16,7 +16,7 @@ app.post('/signup', async (req, res) => {
         res.send('User signed up successfully');
     } catch (error) {
         console.error("Save error:", error);
-        res.status(500).send('Error signing up user');
+        res.status(500).send(error.message);
     }
 });
 
@@ -42,7 +42,7 @@ app.patch('/user', async (req, res) => {
     const updateuser = req.body.id;
     const data=req.body;
     try {
-       const du= await User.findByIdAndUpdate({_id:updateuser},data,{returnDocument:'after' });
+       const du= await User.findByIdAndUpdate({_id:updateuser},data,{returnDocument:'after',runvalidators:true });
         if (!du) {
             res.status(404).send('User not found for update');    
         } else {
