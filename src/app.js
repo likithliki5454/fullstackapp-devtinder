@@ -38,20 +38,33 @@ app.get('/user', async (req, res) => {
 })
 
 
-app.patch('/user', async (req, res) => {
-    const updateuser = req.body.id;
+app.patch('/user/:id', async (req, res) => {
+    const updateuser = req.params?.id;
     const data=req.body;
+    console.log("Update data received:", data);
     try {
+        const allowed=['lastName','skills']
+        const alloweddata=Object.keys(data).every((k)=>{
+            return allowed.includes(k);
+        })
+        console.log("data lengths?", data.skills.length);
+        if(data?.skills.length > 9){
+            throw new Error('too many updates')
+        }
+        if(!alloweddata){
+            throw new Error('invalid updates')
+        }
        const du= await User.findByIdAndUpdate({_id:updateuser},data,{returnDocument:'after',runvalidators:true });
         if (!du) {
             res.status(404).send('User not found for update');    
-        } else {
+        } 
+    else {
             console.log("update user data:", du);
             res.send('data updated successfully');
         }   
     } catch (error) {
-        console.error("update error:", error);
-        res.status(500).send('Error update user data');
+        console.error("update error:", error.message);
+        res.status(500).send(error.message);
     }
 })
 
