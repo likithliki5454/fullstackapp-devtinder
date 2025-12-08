@@ -1,4 +1,5 @@
 const mangoose=require('mongoose');
+const validator=require('validator');
  const userschema=mangoose.Schema({
     firstName:{
     type:String,
@@ -12,7 +13,12 @@ const mangoose=require('mongoose');
         unique:true,
         lowsercase:true,
         required:true,
-        trim:true
+        trim:true,
+        validate(value){    
+            if(!validator.isEmail(value)){
+                throw new Error('email is invalid');
+            }
+        }
     },
     password: {
         type: String,
