@@ -1,12 +1,15 @@
 const express = require('express');
 const app = express();
 const User = require('./models/user.js');   // Use only this
-
 const connectDB = require('./Config/database.js');
 const user = require('./models/user.js');
-app.use(express.json()); // Middleware to parse JSON bodies
 const { validatesignupdata } = require('./utils/validations');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt'); 4
+const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken');
+app.use(cookieParser());
+app.use(express.json()); // Middleware to parse JSON bodies
+
 
 // POST route - create user
 app.post('/signup', async (req, res) => {
@@ -22,6 +25,7 @@ app.post('/signup', async (req, res) => {
 
     try {
         await user.save();
+        res.cookie('token', 'hjgligflglifiougfeirofgiefgeg')
         res.send('User signed up successfully');
     } catch (error) {
         res.status(400).send("ERROR" + error.message);
@@ -29,25 +33,48 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+
 app.post('/login', async (req, res) => {
     const { emailId, password } = req.body;
     try {
-        const user = await User.findOne({ emailId: emailId});
+        const user = await User.findOne({ emailId: emailId });
         if (!user) {
             res.status(404).send('Invalid email or password');
-        } 
-        const ispwvalid=await bcrypt.compare(password, user.password)
-        if(!ispwvalid){
-            res.status(404).send('Invalid email or password');
+        }
+        const ispwvalid = await bcrypt.compare(password, user.password)
+        if (ispwvalid) {
+            const token = jwt.sign({ _id: user._id }, 'Liki@1057')
+            console.log("Generated JWT token:", token);
+            res.cookie('token', token)
+            res.send('Login successful');
         }
         else {
-            res.send('Login successful');
+            res.status(404).send('Invalid email or password');
         }
     } catch (error) {
         console.error("Login error:", error.message);
         res.status(500).send('Error during login');
     }
 }); //likith added 
+
+
+app.get('/profile', async (req, res) => {  
+    try {
+        const cookies = req.cookies
+        const { token } = cookies;
+        if (!token) {
+            throw new Error('no token found');
+        }
+        const decoded = jwt.verify(token, 'Liki@1057')
+        const { _id } = decoded;
+        const userprofile = await User.findById(_id);
+        console.log("User profile data:", userprofile);
+        res.send('Profile data accessed');
+    }
+    catch (err) {
+        console.error("Profile error:", err.message);
+        res.status(500).send('Error accessing profile data');
+    }})
 
 app.get('/user', async (req, res) => {
     const resd = req.body.lastName
