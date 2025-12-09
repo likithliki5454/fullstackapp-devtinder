@@ -5,25 +5,34 @@ const User = require('./models/user.js');   // Use only this
 const connectDB = require('./Config/database.js');
 const user = require('./models/user.js');
 app.use(express.json()); // Middleware to parse JSON bodies
+const { validatesignupdata } = require('./utils/validations');
+const bcrypt = require('bcrypt');
 
 // POST route - create user
 app.post('/signup', async (req, res) => {
-    console.log("Received body:", req.body);
-    const data = new User(req.body);
+    validatesignupdata(req);//written in validations.js page 
+    const { firstName, lastName, emailId, password } = req.body;
+    const hasshedpwd = await bcrypt.hash(password, 10);
+    const user = new User({
+        firstName,
+        lastName,
+        emailId,
+        password: hasshedpwd
+    });
+
     try {
-        const savedUser = await data.save();
-        console.log("Saved user:", savedUser);
+        await user.save();
         res.send('User signed up successfully');
     } catch (error) {
-        console.error("Save error:", error);
-        res.status(500).send(error.message);
+        res.status(400).send("ERROR" + error.message);
+        // console.error("Read error:", error);
     }
 });
 
 app.post('/login', async (req, res) => {
     const { firstName, password } = req.body;
     try {
-        const user = await User.findOne({ firstName:firstName, password: password });            
+        const user = await User.findOne({ firstName: firstName, password: password });
         if (!user) {
             res.status(404).send('Invalid email or password');
         } else {
@@ -53,46 +62,43 @@ app.get('/user', async (req, res) => {
     }
 })
 
-
 app.patch('/user/:id', async (req, res) => {
     const updateuser = req.params?.id;
-    const data=req.body;
+    const data = req.body;
     console.log("Update data received:", data);
     try {
-        const allowed=['lastName','skills']
-        const alloweddata=Object.keys(data).every((k)=>{
+        const allowed = ['lastName', 'skills']
+        const alloweddata = Object.keys(data).every((k) => {
             return allowed.includes(k);
         })
         console.log("data lengths?", data.skills.length);
-        if(data?.skills.length > 9){
+        if (data?.skills.length > 9) {
             throw new Error('too many updates')
         }
-        if(!alloweddata){
+        if (!alloweddata) {
             throw new Error('invalid updates')
         }
-       const du= await User.findByIdAndUpdate({_id:updateuser},data,{returnDocument:'after',runvalidators:true });
+        const du = await User.findByIdAndUpdate({ _id: updateuser }, data, { returnDocument: 'after', runvalidators: true });
         if (!du) {
-            res.status(404).send('User not found for update');    
-        } 
-    else {
+            res.status(404).send('User not found for update');
+        }
+        else {
             console.log("update user data:", du);
             res.send('data updated successfully');
-        }   
+        }
     } catch (error) {
         console.error("update error:", error.message);
         res.status(500).send(error.message);
     }
 })
 
-
-
 app.delete('/user', async (req, res) => {
-    const deluser=req.body.id
+    const deluser = req.body.id
     try {
-        const du=await User.findByIdAndDelete(deluser)
-        if(!du){
+        const du = await User.findByIdAndDelete(deluser)
+        if (!du) {
             res.status(404).send('User not found for deletion');
-        }else{
+        } else {
             console.log("Deleted user data:", du);
             res.send('User deleted successfully')
         }

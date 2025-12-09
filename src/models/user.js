@@ -30,7 +30,6 @@ const validator=require('validator');
     },
     gender:{
         type: String,
-        required:true,
         validate(value){    
             if(!['male','female','other'].includes(value)){
                 throw new Error('gender must be male,female or other');
