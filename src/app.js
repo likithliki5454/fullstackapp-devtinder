@@ -30,13 +30,17 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { firstName, password } = req.body;
+    const { emailId, password } = req.body;
     try {
-        const user = await User.findOne({ firstName: firstName, password: password });
+        const user = await User.findOne({ emailId: emailId});
         if (!user) {
             res.status(404).send('Invalid email or password');
-        } else {
-            console.log("User logged in:", user.firstName);
+        } 
+        const ispwvalid=await bcrypt.compare(password, user.password)
+        if(!ispwvalid){
+            res.status(404).send('Invalid email or password');
+        }
+        else {
             res.send('Login successful');
         }
     } catch (error) {
