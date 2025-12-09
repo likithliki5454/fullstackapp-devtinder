@@ -20,6 +20,22 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    const { firstName, password } = req.body;
+    try {
+        const user = await User.findOne({ firstName:firstName, password: password });            
+        if (!user) {
+            res.status(404).send('Invalid email or password');
+        } else {
+            console.log("User logged in:", user.firstName);
+            res.send('Login successful');
+        }
+    } catch (error) {
+        console.error("Login error:", error.message);
+        res.status(500).send('Error during login');
+    }
+}); //likith added 
+
 app.get('/user', async (req, res) => {
     const resd = req.body.lastName
     try {
