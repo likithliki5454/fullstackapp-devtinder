@@ -43,7 +43,7 @@ app.post('/login', async (req, res) => {
         }
         const ispwvalid = await bcrypt.compare(password, user.password)
         if (ispwvalid) {
-            const token = jwt.sign({ _id: user._id }, '1057@Liki', { expiresIn: '1h' });
+            const token = await user.getJwt();
             console.log("Generated JWT token:", token);
             res.cookie('token', token,expire=new Date(Date.now()+3600000), httpOnly=true);
             res.send('Login successful');

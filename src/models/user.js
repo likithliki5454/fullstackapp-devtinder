@@ -1,5 +1,6 @@
 const mangoose=require('mongoose');
 const validator=require('validator');
+const jwt = require("jsonwebtoken"); 
  const userschema=mangoose.Schema({
     firstName:{
     type:String,
@@ -41,5 +42,10 @@ const validator=require('validator');
     }
  },{ timestamps:true})
 
+ userschema.methods.getJwt=async function(){
+    const user=this;
+    const token =jwt.sign({ _id: user._id }, '1057@Liki', { expiresIn: '1h' })
+    return token;
+ }
  
  module.exports=mangoose.model('User',userschema);
