@@ -9,7 +9,8 @@ const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken');
 app.use(cookieParser());
 app.use(express.json()); // Middleware to parse JSON bodies
-
+const userAuth = require('./Middleware/auth');
+const e = require('express');
 
 // POST route - create user
 app.post('/signup', async (req, res) => {
@@ -33,7 +34,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-
 app.post('/login', async (req, res) => {
     const { emailId, password } = req.body;
     try {
@@ -43,9 +43,9 @@ app.post('/login', async (req, res) => {
         }
         const ispwvalid = await bcrypt.compare(password, user.password)
         if (ispwvalid) {
-            const token = jwt.sign({ _id: user._id }, 'Liki@1057')
+            const token = jwt.sign({ _id: user._id }, '1057@Liki', { expiresIn: '1h' });
             console.log("Generated JWT token:", token);
-            res.cookie('token', token)
+            res.cookie('token', token,expire=new Date(Date.now()+3600000), httpOnly=true);
             res.send('Login successful');
         }
         else {
@@ -57,24 +57,24 @@ app.post('/login', async (req, res) => {
     }
 }); //likith added 
 
-
-app.get('/profile', async (req, res) => {  
+app.get('/profile', userAuth ,async (req, res) => {  
     try {
-        const cookies = req.cookies
-        const { token } = cookies;
-        if (!token) {
-            throw new Error('no token found');
+        const user=req.user
+        if(!user)   {
+            return res.status(404).send('User not found');
         }
-        const decoded = jwt.verify(token, 'Liki@1057')
-        const { _id } = decoded;
-        const userprofile = await User.findById(_id);
-        console.log("User profile data:", userprofile);
         res.send('Profile data accessed');
     }
     catch (err) {
-        console.error("Profile error:", err.message);
         res.status(500).send('Error accessing profile data');
     }})
+
+
+app.post('/connectionreq',userAuth, async (req,res)=>{
+    console.log(req.user);
+    const user=req.user.emailId;
+    res.send('Connection request sent by '+user);
+})
 
 app.get('/user', async (req, res) => {
     const resd = req.body.lastName
