@@ -4,19 +4,18 @@ const User = require('./models/user.js');   // Use only this
 const connectDB = require('./Config/database.js');
 const user = require('./models/user.js');
 const { validatesignupdata } = require('./utils/validations');
-const bcrypt = require('bcrypt'); 4
+const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken');
 app.use(cookieParser());
 app.use(express.json()); // Middleware to parse JSON bodies
 const userAuth = require('./Middleware/auth');
-const e = require('express');
 
 // POST route - create user
 app.post('/signup', async (req, res) => {
     validatesignupdata(req);//written in validations.js page 
     const { firstName, lastName, emailId, password } = req.body;
-    const hasshedpwd = await bcrypt.hash(password, 10);
+    const hasshedpwd = await signPWD(password)
     const user = new User({
         firstName,
         lastName,
@@ -41,7 +40,8 @@ app.post('/login', async (req, res) => {
         if (!user) {
             res.status(404).send('Invalid email or password');
         }
-        const ispwvalid = await bcrypt.compare(password, user.password)
+        console.log('user found:', user);
+        const ispwvalid = await user.toPWD(password);
         if (ispwvalid) {
             const token = await user.getJwt();
             console.log("Generated JWT token:", token);
