@@ -8,4 +8,4 @@ connrequestRouter.post('/connectionreq',userAuth, async (req,res)=>{
     res.send('Connection request sent by '+user);
 })
 
-module.exports =connrequestRouter;
+module.exports =connrequestRouter

@@ -2,7 +2,7 @@ const express = require('express');
 const profilerouter = express.Router();
 const userAuth = require('../Middleware/authLogic');
 
-profilerouter.get('/profile', userAuth ,async (req, res) => {  
+profilerouter.get('/profile/view', userAuth ,async (req, res) => {  
     try {
         const user=req.user
         if(!user)   {

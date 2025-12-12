@@ -10,7 +10,6 @@ const userAuth = async (req, res, next) => {
         const decodedData = jwt.verify(token, '1057@Liki')
         const { _id } = decodedData;
         const user =await User.findById(_id);
-        console.log('user'+ user);
         
         if (!user) {
             throw new Error('User not found');
@@ -18,7 +17,7 @@ const userAuth = async (req, res, next) => {
         req.user = user;
         next()
     } catch (error) {
-        res.status(401).send('Unauthorized: ' + error.message);
+        res.status(401).send('Please login to access this resource: ' + error.message);
     }
 }
 
