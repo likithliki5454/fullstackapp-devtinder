@@ -88,7 +88,6 @@ authRouter.patch('/profile/edit', userAuth, async (req, res) => {
     }
 });
 
-
 authRouter.post('/profile/forgotpassword',async (req,res)=>{
     const newpassword=req.body.password;
     try{
@@ -113,6 +112,26 @@ authRouter.post('/profile/forgotpassword',async (req,res)=>{
         }
 })
 
+authRouter.patch('/profile/changepassword',userAuth,async (req,res)=>{
+const {oldpassword,newpassword}=req.body;
+    try{
+        const loggedinuser=req.user;
+        const ispwvalid= await loggedinuser.toPWD(oldpassword);
+        if(!ispwvalid){
+            return res.status(400).send('Old password is incorrect');
+        }
+        if(!validator.isStrongPassword(newpassword)){
+            return res.status(400).send('New password is not strong enough');
+        }else{
+            const hasshedpwd=await signPWD(newpassword);;
+            loggedinuser.password=hasshedpwd;
+            await loggedinuser.save();
+            res.send('Password changed successfully');
+        }
+    }catch(err){
+    res.status(500).send('Error changing password'+err.message);
+    }
+})
 
 authRouter.post('/logout', (req, res) => {
     res.cookie('token', null, {
