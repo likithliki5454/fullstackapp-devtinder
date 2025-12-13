@@ -4,7 +4,7 @@ const User = require('../models/user.js');
 const userAuth = require('../Middleware/authLogic.js');
 const authRouter = express.Router();
 const validator = require('validator');
-
+const bcrypt = require('bcrypt');
 // POST route - create user
 authRouter.post('/signup', async (req, res) => {
     try {
@@ -58,7 +58,6 @@ authRouter.patch('/profile/edit', userAuth, async (req, res) => {
         Object.keys(req.body).forEach((data) => {
             const newValue = req.body[data];
             const oldValue = loggedinuser[data];
-
             // For arrays like skills
             if (Array.isArray(newValue)) {
                 if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
@@ -72,7 +71,7 @@ authRouter.patch('/profile/edit', userAuth, async (req, res) => {
                 isUpdated = true;
             }
         });
-        // 🚨 No changes detected
+        //  No changes detected
         if (!isUpdated) {
             return res.status(400).json({
                 warning: 'No changes detected. Profile already up to date.'
@@ -88,6 +87,31 @@ authRouter.patch('/profile/edit', userAuth, async (req, res) => {
         res.status(400).send(error.message);
     }
 });
+
+
+authRouter.post('/profile/forgotpassword',async (req,res)=>{
+    const newpassword=req.body.password;
+    try{
+        const editUser=await User.findOne({emailId:req.body.emailId})
+        if(!editUser){
+            return res.status(404).send('User not found');
+        }
+        const samepassworrd= await bcrypt.compare(newpassword,editUser.password);
+        if(samepassworrd){
+            return res.status(400).send('New password must be different from the old password');
+        }
+        if(!validator.isStrongPassword(newpassword)){
+            res.status(400).send('Password is not strong enough');
+        }else{
+            const hasshedpwd=await signPWD(newpassword);
+            editUser.password=hasshedpwd;
+            await editUser.save();
+            res.send('Password reset successful');
+        }
+        }catch(err){
+            res.send('not able to set password'+err.message);
+        }
+})
 
 
 authRouter.post('/logout', (req, res) => {
