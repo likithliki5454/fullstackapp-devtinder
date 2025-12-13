@@ -40,6 +40,9 @@ const userschema = mangoose.Schema({
     },
     skills: {
         type: [String],
+    },
+    photourl: {
+        type: String,
     }
 }, { timestamps: true })
 
