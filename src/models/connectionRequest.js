@@ -18,4 +18,12 @@ const connectionrequestSchema=new mangoose.Schema({
 },{timestamps:true});               
 
 
+connectionrequestSchema.pre('save',async function(next){
+    const connectionrequest=this;   
+    if(connectionrequest.fromUserId.equals(connectionrequest.toUserId)){
+        throw new Error('Cannot send connection request to yourself');
+    }
+    next();
+});
+
 module.exports=mangoose.model('ConnectionRequest',connectionrequestSchema);
