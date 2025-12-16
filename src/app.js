@@ -10,8 +10,7 @@ app.use(express.json()); // Middleware to parse JSON bodies
 
 const authRouter = require('./routes/auth.js');
 const profilerouter = require('./routes/profile.js');
-const connrequestRouter = require('./routes/connrequest.js');
-
+const connrequestRouter = require('./routes/request.js');
 
 app.use('/', authRouter);
 app.use('/', profilerouter);
