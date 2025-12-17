@@ -18,6 +18,6 @@ post    /request/review/rejected/:requestId
 
 
 <!-- myprofile router -->
+get     user/requests/recived
 get     user/connections
-get     user/requests
 get     user/feed         -gets you the profiles of other user on platform

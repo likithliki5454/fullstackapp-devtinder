@@ -47,42 +47,45 @@ connrequestRouter.post('/request/send/:status/:toUserId', userAuth, async (req, 
 
 
 connrequestRouter.post('/request/respond/:status/:requestId',userAuth,async (req, res) => {
-        try {
-            const loggedInUserId = req.user._id;
-            const requestId = req.params.requestId;
-            const status = req.params.status.toLowerCase();
+    try {
+      const loggedInUserId = req.user._id;
+      const { requestId, status } = req.params;
+      const action = status.toLowerCase();
+      const allowedStatus = ['accept', 'ignore'];
+      if (!allowedStatus.includes(action)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
 
-            const allowedStatus = ['accept', 'ignore'];
-            if (!allowedStatus.includes(status)) {
-                return res.status(400).json({ message: 'Invalid status value' });
-            }
+      const request = await connectionRequest.findById(requestId);
+      if (!request) {
+        return res.status(404).json({ message: 'Connection request not found' });
+      }
 
-            const request = await connectionRequest.findById(requestId);
-            if (!request) {
-                return res.status(404).json({ message: 'Connection request not found' });
-            }
+      if (!request.toUserId.equals(loggedInUserId)) {
+        return res.status(403).json({ message: 'Not authorized to respond' });
+      }
+      const statusMap = {
+        accept: 'accepted',
+        ignore: 'ignored'
+      };
 
-            if (!request.toUserId.equals(loggedInUserId)) {
-                return res.status(403).json({ message: 'Not authorized to respond' });
-            }
+      const newStatus = statusMap[action];
+      if (request.status === newStatus) {
+        return res.status(400).json({ message: `Request already ${newStatus}` });
+      }
+      request.status = newStatus;
+      await request.save();
 
-            if (request.status !== 'pending') {
-                return res.status(400).json({ message: 'Request already processed' });
-            }
+      res.json({
+        message: `Connection request ${newStatus} successfully`,
+        request
+      });
 
-            request.status = status === 'accept' ? 'accept' : 'ignore';
-            await request.save();
-
-            res.json({
-                message: `Connection request ${request.status} successfully`,
-                request
-            });
-
-        } catch (error) {
-            console.error('Connection request response error:', error.message);
-            res.status(500).send(error.message);
-        }
+    } catch (error) {
+      console.error('Connection request response error:', error.message);
+      res.status(500).send(error.message);
     }
+  }
 );
 
 

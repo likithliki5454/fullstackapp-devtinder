@@ -3,6 +3,7 @@ const connectionrequestSchema=new mangoose.Schema({
     fromUserId:{
         type:mangoose.Schema.Types.ObjectId,
         required:true,
+        ref:'User',
     },
     toUserId:{
         type:mangoose.Schema.Types.ObjectId,
@@ -11,7 +12,7 @@ const connectionrequestSchema=new mangoose.Schema({
     status:{
         type:String,
         enum:{
-            values:['pending','intrested','rejected','accept','ignore'],
+            values:['pending','intrested','rejected','accepted','ignored'],
             Message:'status can be pending, intrested or rejected',
         }
     }
