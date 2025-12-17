@@ -22,11 +22,22 @@ userRouter.get('/user/requests/accepted', userAuth, async (req, res) => {
         const loggedInUserId = req.user._id;
         const matcheduser=await connectionRequest.find({ 
         $or: [
-            { fromUserId: loggedInUserId },
-            { toUserId: loggedInUserId }
-        ], status: 'accepted' 
-    }).populate('fromUserId toUserId', 'firstName');
-        res.status(200).json({ matcheduser, message: 'Fetched matched users successfully' });
+            { fromUserId: loggedInUserId,status: 'accepted' },
+            { toUserId: loggedInUserId, status: 'accepted' }
+        ] 
+    })
+    .populate('fromUserId', 'firstName')
+    .populate('toUserId', 'firstName');
+
+
+    const data=matcheduser.map((connection)=>{
+        if(connection.fromUserId._id.equals(loggedInUserId)){
+            return connection.toUserId;
+        }else{
+            return connection.fromUserId;
+        }       
+    });
+        res.status(200).json({ data, message: 'Fetched matched users successfully' });
     }
     catch (error) {
         console.error("Error fetching requests:", error.message);
