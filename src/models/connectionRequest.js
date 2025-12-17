@@ -11,7 +11,7 @@ const connectionrequestSchema=new mangoose.Schema({
     status:{
         type:String,
         enum:{
-            values:['pending','intrested','rejected'],
+            values:['pending','intrested','rejected','accept','ignore'],
             Message:'status can be pending, intrested or rejected',
         }
     }

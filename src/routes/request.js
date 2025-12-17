@@ -37,11 +37,53 @@ connrequestRouter.post('/request/send/:status/:toUserId', userAuth, async (req, 
         });
 
         await newRequest.save();
-        res.status(201).json({ message: req.user.firstName + ' is ' + status +" "+ touserispresentindb.firstName, request: newRequest });
+        res.status(201).json({ message: req.user.firstName + ' is ' + status + " " + touserispresentindb.firstName, request: newRequest });
 
     } catch (error) {
         console.error("Connection request error:", error.message);
         res.status(500).send(error.message);
     }
 })
+
+
+connrequestRouter.post('/request/respond/:status/:requestId',userAuth,async (req, res) => {
+        try {
+            const loggedInUserId = req.user._id;
+            const requestId = req.params.requestId;
+            const status = req.params.status.toLowerCase();
+
+            const allowedStatus = ['accept', 'ignore'];
+            if (!allowedStatus.includes(status)) {
+                return res.status(400).json({ message: 'Invalid status value' });
+            }
+
+            const request = await connectionRequest.findById(requestId);
+            if (!request) {
+                return res.status(404).json({ message: 'Connection request not found' });
+            }
+
+            if (!request.toUserId.equals(loggedInUserId)) {
+                return res.status(403).json({ message: 'Not authorized to respond' });
+            }
+
+            if (request.status !== 'pending') {
+                return res.status(400).json({ message: 'Request already processed' });
+            }
+
+            request.status = status === 'accept' ? 'accept' : 'ignore';
+            await request.save();
+
+            res.json({
+                message: `Connection request ${request.status} successfully`,
+                request
+            });
+
+        } catch (error) {
+            console.error('Connection request response error:', error.message);
+            res.status(500).send(error.message);
+        }
+    }
+);
+
+
 module.exports = connrequestRouter
