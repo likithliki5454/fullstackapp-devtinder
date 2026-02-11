@@ -39,7 +39,7 @@ authRouter.post('/login', async (req, res) => {
                 expires: new Date(Date.now() + 3600000),
                 httpOnly: true
             });
-            res.send('Login successful');
+            res.send(user);
         }
         else {
             res.status(404).send('Invalid email or password');
