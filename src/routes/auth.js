@@ -6,6 +6,9 @@ const authRouter = express.Router();
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 // POST route - create user
+
+
+
 authRouter.post('/signup', async (req, res) => {
     try {
         validatesignupdata(req);//written in validations.js page 
@@ -29,6 +32,7 @@ authRouter.post('/login', async (req, res) => {
     const { emailId, password } = req.body;
     try {
         const user = await User.findOne({ emailId: emailId });
+        
         if (!user) {
             res.status(404).send('Invalid email or password');
         }
@@ -42,13 +46,22 @@ authRouter.post('/login', async (req, res) => {
             res.send(user);
         }
         else {
-            res.status(404).send('Invalid email or password');
+            return res.status(404).send({ message: 'Invalid email or password' });
         }
     } catch (error) {
         console.error("Login error:", error.message);
-        res.status(500).send('Error during login');
+        res.status(500).json({ message: 'Error during login' });
     }
 }); //likith added 
+
+authRouter.get('/profile/view',userAuth,async(req,res)=>{
+    try{
+        const loggedinuser=req.user;
+        res.send(loggedinuser);
+    }catch(err){
+        res.status(400).send('Error fetching profile'+err.message);
+    }
+})
 
 authRouter.patch('/profile/edit', userAuth, async (req, res) => {
     try {
