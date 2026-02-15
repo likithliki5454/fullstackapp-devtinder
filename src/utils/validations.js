@@ -14,14 +14,14 @@ const validatesignupdata = (req) => {
 }
 
 const validateProfile = (req) => {
-    const allowedFields = ['firstName', 'age', 'skills'];
+    const allowedFields = ['firstName', 'age', 'skills', 'photoUrl'];
     const isAllowed = Object.keys(req.body).every((field) =>
         allowedFields.includes(field)
     );
     if (!isAllowed) {
         throw new Error('Invalid field update');
     }
-    const { firstName, age, skills } = req.body;
+    const { firstName, age, skills, photoUrl } = req.body;
     // 2️⃣ firstName validation
     if (firstName && firstName.length > 10) {
         throw new Error('firstName should not exceed 10 characters');
@@ -33,6 +33,9 @@ const validateProfile = (req) => {
     // 4️⃣ skills validation
     if (skills && (!Array.isArray(skills) || skills.length > 10)) {
         throw new Error('skills should be an array with max 10 items');
+    }
+    if(photoUrl && !validator.isURL(photoUrl)){
+        throw new Error('Invalid photo URL');
     }
 
     return true;

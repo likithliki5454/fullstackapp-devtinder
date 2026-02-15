@@ -38,11 +38,15 @@ const userschema = mangoose.Schema({
             }
         }
     },
+
     skills: {
         type: [String],
+        default: []        // ✅ fixed
     },
-    photourl: {
+
+    photoUrl: {           // ✅ fixed name
         type: String,
+        default: "https://randomuser.me/api/portraits/women/45.jpg"
     }
 }, { timestamps: true })
 

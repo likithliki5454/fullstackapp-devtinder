@@ -67,12 +67,15 @@ userRouter.get('/feed', userAuth, async (req, res) => {
             hideUserIds.add(request.toUserId.toString());
         });
 
-        const feedUsers = await user.find({
-            $and: [
-                { _id: { $ne: loggedInUserId } },
-                { _id: { $nin: Array.from(hideUserIds) } }
-            ]
-        }).select('firstName').skip(skip).limit(count);
+const feedUsers = await user.find({
+    $and: [
+        { _id: { $ne: loggedInUserId } },
+        { _id: { $nin: Array.from(hideUserIds) } }
+    ]
+})
+.select('-password')   // ⬅️ exclude password only
+.skip(skip)
+.limit(count);
 
         res.json({
             message: 'Feed users fetched successfully',
