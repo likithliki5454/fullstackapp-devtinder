@@ -159,29 +159,105 @@ authRouter.patch('/profile/edit', userAuth, async (req, res) => {
     }
 });
 
-authRouter.post('/profile/forgotpassword', async (req, res) => {
-    const newpassword = req.body.password;
-    try {
-        const editUser = await User.findOne({ emailId: req.body.emailId })
-        if (!editUser) {
-            return res.status(404).send('User not found');
-        }
-        const samepassworrd = await bcrypt.compare(newpassword, editUser.password);
-        if (samepassworrd) {
-            return res.status(400).send('New password must be different from the old password');
-        }
-        if (!validator.isStrongPassword(newpassword)) {
-            res.status(400).send('Password is not strong enough');
-        } else {
-            const hasshedpwd = await signPWD(newpassword);
-            editUser.password = hasshedpwd;
-            await editUser.save();
-            res.send('Password reset successful');
-        }
-    } catch (err) {
-        res.send('not able to set password' + err.message);
+// authRouter.post('/profile/forgotpassword', async (req, res) => {
+//     const newpassword = req.body.password;
+//     try {
+//         const editUser = await User.findOne({ emailId: req.body.emailId })
+//         if (!editUser) {
+//             return res.status(404).send('User not found');
+//         }
+//         const samepassworrd = await bcrypt.compare(newpassword, editUser.password);
+//         if (samepassworrd) {
+//             return res.status(400).send('New password must be different from the old password');
+//         }
+//         if (!validator.isStrongPassword(newpassword)) {
+//             res.status(400).send('Password is not strong enough');
+//         } else {
+//             const hasshedpwd = await signPWD(newpassword);
+//             editUser.password = hasshedpwd;
+//             await editUser.save();
+//             res.send('Password reset successful');
+//         }
+//     } catch (err) {
+//         res.send('not able to set password' + err.message);
+//     }
+// })
+
+
+authRouter.post('/profile/verify-email', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ emailId : email });
+  console.log("Verifying email for:", user);
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Email verified successfully"
+  });
+});
+
+
+authRouter.patch("/profile/forgotpassword", async (req, res) => {
+  const { email, newpassword } = req.body;
+
+  try {
+    // 1️⃣ Validate input
+    if (!email || !newpassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and new password are required",
+      });
     }
-})
+
+    // 2️⃣ Check if user exists
+    const user = await User.findOne({ emailId: email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 3️⃣ Validate strong password
+    if (!validator.isStrongPassword(newpassword)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must contain 8 characters, 1 uppercase, 1 lowercase, 1 number and 1 symbol",
+      });
+    }
+
+    // 4️⃣ Prevent reusing old password
+    const isSamePassword = await user.toPWD(newpassword);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password cannot be same as old password",
+      });
+    }
+
+    // 5️⃣ Hash new password
+    const hashedPwd = await signPWD(newpassword);
+
+    user.password = hashedPwd;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error changing password",
+    });
+  }
+});
+
 
 authRouter.patch('/profile/changepassword', userAuth, async (req, res) => {
     const { oldpassword, newpassword } = req.body;
